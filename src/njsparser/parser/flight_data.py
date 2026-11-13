@@ -155,19 +155,27 @@ def _resolve_row(raw_value: bytes, value_class: str | None, index: int | None, r
 def _iter_rows(data: bytes):
     pos = 0
     while (index_end := data.find(b":", pos)) != -1:
-        index = int(data[pos:index_end], 16) if index_end > pos else None
         tag_pos = index_end + 1
         tag = chr(data[tag_pos]) if tag_pos < len(data) else ""
-        if tag in _length_prefixed_tags:
-            length_end = data.find(b",", tag_pos)
-            start = length_end + 1
-            end = pos = start + int(data[tag_pos + 1:length_end], 16)
-        else:
-            start = tag_pos + 1 if tag in _tags else tag_pos
-            end = data.find(b"\n", start)
-            if end == -1:
-                end = len(data)
-            pos = end + 1
+        try:
+            index = int(data[pos:index_end], 16) if index_end > pos else None
+            if tag in _length_prefixed_tags:
+                length_end = data.index(b",", tag_pos)
+                start = length_end + 1
+                end = pos = start + int(data[tag_pos + 1:length_end], 16)
+            else:
+                start = tag_pos + 1 if tag in _tags else tag_pos
+                end = data.find(b"\n", start)
+                if end == -1:
+                    end = len(data)
+                pos = end + 1
+        except ValueError:
+            logger.warning(f"Couldn't read the row at byte `{pos}`. Skipping its line.")
+            line_end = data.find(b"\n", pos)
+            if line_end == -1:
+                return
+            pos = line_end + 1
+            continue
         raw_value = data[start:end]
         value_class = tag if tag in _tags else None
         # A hint row keeps its code in the class, as in `"HL"`.

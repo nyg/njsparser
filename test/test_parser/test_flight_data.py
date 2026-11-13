@@ -139,3 +139,11 @@ def test_parse_decoded_raw_flight_data_hints():
     fd = parse_decoded_raw_flight_data(decoded_raw_flight_data=[':HL["/a.css","style"]\n', ':Hm["/b.js"]\n'])
     assert isinstance(fd[None][0], HintPreload)
     assert fd[None][1] == Element(value=["/b.js"], value_class="Hm", index=None)
+
+def test_parse_decoded_raw_flight_data_unreadable_rows(caplog):
+    fd = parse_decoded_raw_flight_data(decoded_raw_flight_data=['1:"a"\nzz:1\nfoo\n2:Tzz\n3:"b"\n'])
+    assert fd == {
+        1: Element(value="a", value_class=None, index=1),
+        3: Element(value="b", value_class=None, index=3),
+    }
+    assert caplog.text.count("Couldn't read the row") == 3
