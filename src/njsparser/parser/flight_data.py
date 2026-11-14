@@ -93,25 +93,6 @@ def decode_raw_flight_data(raw_flight_data: _raw_f_data) -> List[str]:
         raise error
     return initial_server_data_buffer
 
-# TODO: update `parse_decoded_raw_flight_data` with the new data found in react at:
-# https://github.com/facebook/react/blob/1c9b138714a69cd136a3d82769b1fd9a4b318953/packages/react-client/src/ReactFlightClient.js#L2874-L2993
-# --> processFullBinaryRow()
-#             \/
-# --> processFullStringRow() -> str[0] == "H" -> resolveHint -> parseModel(str[1]) -> parseModel -> dispatchHint(JSON.parse(...), str[1])   -> str[1] == "D" -> prefetchDNS
-#                            ->        == "I" -> resolveModule                                                                              ->        == "C" -> preconnect
-#                            ->        == "E" -> JSON.parse(...).digest                                                                     ->        == "L" -> preload
-#                            ->        == "T" -> resolveText                                                                                ->        == "m" -> preloadModule
-#                            ->        == "D" -> resolveDebugInfo                                                                           ->        == "X" -> preinitScript
-#                            ->        == "W" -> resolveConsoleEntry                                                                        ->        == "S" -> preinitStyle
-#                            ->        == "R" -> startReadableStream                                                                        ->        == "M" -> preinitModuleScript
-#                            ->        == "r" -> startReadableStream(bytes)
-#                            ->        == "X" -> startAsyncIterable(false)
-#                            ->        == "x" -> startAsyncIterable(true)
-#                            ->        == "C" -> stopStream
-#                            ->        == "P" -> resolvePostponeProd
-#                            -> else          -> resolveModel
-
-
 FD = dict[int, TE]
 
 # The row tags as React reads them, in `processBinaryChunk` of `ReactFlightClient.js`.
